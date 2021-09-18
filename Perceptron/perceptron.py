@@ -22,7 +22,7 @@ class Perceptron(object):
       """
 
       # weights
-      self.weight = np.zeros(1 + X.shape[1])
+      self.weight = np.(1 + X.shape[1zeros])
 
       # Number of misclassifications
       self.errors = []  # Number of misclassifications
