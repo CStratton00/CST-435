@@ -1,3 +1,16 @@
+
+# AUTHOR: Jason Brownlee, Joe Samyn, Collin Stratton 
+# DATE: 10/01/2021
+# DESCRIPTION: This code demonstrates a multilayer perceptron being used to predict whether a particular seed is a 
+# wheat seed based on various size parameters. Backgropagation is used to improve the accuracy of the model throughout
+# each epoch. 500 epochs are used to achieve an accuracy of 95%. In this example 5 hidden layers are used as well
+# to help achieve the desired accuract. 
+# DISCLOSURE: This code was found online at https://machinelearningmastery.com/implement-backpropagation-algorithm-scratch-python/.
+# It was updated and altered to achieve the hire accuracy percentages. We do not own all of this code, and it is the intillectual 
+# property of the author Jason Brownlee. This code is strictly being used for educational purposes. 
+
+
+
 # Backprop on the Seeds Dataset
 from random import seed
 from random import randrange
@@ -6,6 +19,8 @@ from csv import reader
 from math import exp
  
 # Load a CSV file
+# Simply used to load the seeds dataset from a file for training
+# and testing the network
 def load_csv(filename):
 	dataset = list()
 	with open(filename, 'r') as file:
@@ -17,11 +32,15 @@ def load_csv(filename):
 	return dataset
  
 # Convert string column to float
+# The data is read in as strings, so the columns need to be converted into 
+# floats for use in the network
 def str_column_to_float(dataset, column):
 	for row in dataset:
 		row[column] = float(row[column].strip())
  
 # Convert string column to integer
+# The data is read in as strings, so the columns need to be converted into 
+# integers for use in the network
 def str_column_to_int(dataset, column):
 	class_values = [row[column] for row in dataset]
 	unique = set(class_values)
@@ -39,12 +58,19 @@ def dataset_minmax(dataset):
 	return stats
  
 # Rescale dataset columns to the range 0-1
+# Each column in the data has a range between
+# the min value in the dataset and the max. 
+# We can use this to map all values to a value
+# between 0 and 1
 def normalize_dataset(dataset, minmax):
 	for row in dataset:
 		for i in range(len(row)-1):
 			row[i] = (row[i] - minmax[i][0]) / (minmax[i][1] - minmax[i][0])
  
 # Split a dataset into k folds
+# K-folds cross validation is a method
+# used to estimate the skill of a machine
+# learning model
 def cross_validation_split(dataset, n_folds):
 	dataset_split = list()
 	dataset_copy = list(dataset)
@@ -87,21 +113,27 @@ def evaluate_algorithm(dataset, algorithm, n_folds, *args):
 # Calculate neuron activation for an input
 def activate(weights, inputs):
 	activation = weights[-1]
+    # Loop through weights and calculate the activation result
 	for i in range(len(weights)-1):
 		activation += weights[i] * inputs[i]
 	return activation
  
 # Transfer neuron activation
 def transfer(activation):
+    # use sigmoid transfer function
 	return 1.0 / (1.0 + exp(-activation))
  
 # Forward propagate input to a network output
+# Work through each layer calculating the output for each neuron. 
 def forward_propagate(network, row):
 	inputs = row
+    # Loop through layers and each neuron in each layer
 	for layer in network:
 		new_inputs = []
 		for neuron in layer:
+            # Calculate neuron activation
 			activation = activate(neuron['weights'], inputs)
+            # Calculate transfer function
 			neuron['output'] = transfer(activation)
 			new_inputs.append(neuron['output'])
 		inputs = new_inputs
@@ -130,7 +162,8 @@ def backward_propagate_error(network, expected):
 			neuron = layer[j]
 			neuron['delta'] = errors[j] * transfer_derivative(neuron['output'])
  
-# Update network weights with error
+# Loop through all of the weights and update the weights
+# using the error calculated and the learning rate
 def update_weights(network, row, l_rate):
 	for i in range(len(network)):
 		inputs = row[:-1]
@@ -143,24 +176,34 @@ def update_weights(network, row, l_rate):
  
 # Train a network for a fixed number of epochs
 def train_network(network, train, l_rate, n_epoch, n_outputs):
-	for epoch in range(n_epoch):
-		for row in train:
-			outputs = forward_propagate(network, row)
-			expected = [0 for i in range(n_outputs)]
-			expected[row[-1]] = 1
-			backward_propagate_error(network, expected)
-			update_weights(network, row, l_rate)
+    sum_error = 0
+    # Run the network for the number of epochs specified to train the network on the training set
+    for epoch in range(n_epoch):
+        for row in train:
+            outputs = forward_propagate(network, row)
+            expected = [0 for i in range(n_outputs)]
+            expected[row[-1]] = 1
+            # Calculate the error
+            sum_error += sum([(expected[i]-outputs[i])**2 for i in range(len(expected))])
+            # back propagate the error
+            backward_propagate_error(network, expected)
+            # update the weights to improve network accuracy
+            update_weights(network, row, l_rate)
+        print('>epoch=%d, lrate=%.3f, error=%.3f' % (epoch, l_rate, sum_error))
  
 # Initialize a network
 def initialize_network(n_inputs, n_hidden, n_outputs):
 	network = list()
+    # create a hidden layer in the network
 	hidden_layer = [{'weights':[random() for i in range(n_inputs + 1)]} for i in range(n_hidden)]
 	network.append(hidden_layer)
+    # create an output layer in the network
 	output_layer = [{'weights':[random() for i in range(n_hidden + 1)]} for i in range(n_outputs)]
 	network.append(output_layer)
 	return network
  
 # Make a prediction with a network
+# Test the nueral network
 def predict(network, row):
 	outputs = forward_propagate(network, row)
 	return outputs.index(max(outputs))
@@ -169,9 +212,12 @@ def predict(network, row):
 def back_propagation(train, test, l_rate, n_epoch, n_hidden):
 	n_inputs = len(train[0]) - 1
 	n_outputs = len(set([row[-1] for row in train]))
+    # Initialize the network with a specified number of hidden layers and output perceptrons
 	network = initialize_network(n_inputs, n_hidden, n_outputs)
+    # train the network using the specified number of epochs and learning rate
 	train_network(network, train, l_rate, n_epoch, n_outputs)
 	predictions = list()
+    # Run prediction on each row in test data
 	for row in test:
 		prediction = predict(network, row)
 		predictions.append(prediction)
