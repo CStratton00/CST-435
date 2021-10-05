@@ -1,6 +1,7 @@
 # Artificial Neural Network Project
 
 Project in CST-435 to build a simple ANN to learn more about machine learning and gain experience for later projects.
+
 # How to Run
 
 * Clone the repository
@@ -9,4 +10,4 @@ Project in CST-435 to build a simple ANN to learn more about machine learning an
   * Random
   * CSV
   * Math
-* Run `python main.py`
+* Run the Notebook
