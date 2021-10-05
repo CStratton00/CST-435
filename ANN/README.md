@@ -7,7 +7,7 @@ Project in CST-435 to build a simple ANN to learn more about machine learning an
 * Clone the repository
 * Open the folder in the terminal
 * Make sure to have the following libraries installed
-  * Random
-  * CSV
-  * Math
+  * TensorFlow
+  * MatPlotLib
+  * Numpy
 * Run the Notebook
